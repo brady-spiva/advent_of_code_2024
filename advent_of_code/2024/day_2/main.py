@@ -2,14 +2,26 @@ from pathlib import Path
 
 def determine_safety_of_nuclear_reactor_report(report:list) -> bool:
     
+    def calculate_differences(report:list) -> list:
+        return [y - x for x, y in zip(report, report[1:])]
     # what are the differences between the levels?
-    differences = [y - x for x, y in zip(report, report[1:])]
+    differences = calculate_differences(report)
     
     # safe levels have an absolute difference between 1 and 3
-    if all([1 <= abs(diff) <= 3 for diff in differences]):
+    differences_bool = [1 <= abs(diff) <= 3 for diff in differences]
+
+    if all(differences_bool):
         # are the differences all increasing or decreasing?
         if all([diff >= 0 for diff in differences]) or all([diff <= 0 for diff in differences]):
             return True
+    else:
+        # level 2 - include the problem dampener. Can we remove a single level from the report to make it safe?
+        # try removing a single level
+        for i, diff in enumerate(differences):
+            if 1 <= abs(diff) <= 3:
+                new_report = report[:i] + report[i+1:]
+                if determine_safety_of_nuclear_reactor_report(new_report):
+                    return True
     return False
 
 if __name__ == "__main__":
